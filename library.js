@@ -28,8 +28,8 @@
 		async = module.parent.require('async'),
 
 		constants = Object.freeze({
-			type: '',	// Either 'oauth' or 'oauth2'
-			name: '',	// Something unique to your OAuth provider in lowercase, like "github", or "nodebb"
+			type: 'oauth2',	// Either 'oauth' or 'oauth2'
+			name: 'yuri',	// Something unique to your OAuth provider in lowercase, like "github", or "nodebb"
 			oauth: {
 				requestTokenURL: '',
 				accessTokenURL: '',
@@ -38,12 +38,12 @@
 				consumerSecret: ''
 			},
 			oauth2: {
-				authorizationURL: '',
-				tokenURL: '',
-				clientID: '',
-				clientSecret: ''
+				authorizationURL: 'http://nodebb-test.com:9000/auth/oauth/authorise',
+				tokenURL: 'http://nodebb-test.com:9000/auth/oauth/token',
+				clientID: 'nodeBBclient',
+				clientSecret: 'nodeBBclientTestSecret'
 			},
-			userRoute: ''	// This is the address to your app's "user profile" API endpoint (expects JSON)
+			userRoute: 'http://nodebb-test.com:9000/api/users/me'	// This is the address to your app's "user profile" API endpoint (expects JSON)
 		}),
 		configOk = false,
 		OAuth = {}, passportOAuth, opts;
@@ -69,7 +69,7 @@
 
 				passportOAuth.Strategy.prototype.userProfile = function(token, secret, params, done) {
 					this._oauth.get(constants.userRoute, token, secret, function(err, body, res) {
-						if (err) { return done(new InternalOAuthError('failed to fetch user profile', err)); }
+						if (err) { return done(new Error('failed to fetch user profile', err)); }
 
 						try {
 							var json = JSON.parse(body);
@@ -90,7 +90,7 @@
 
 				passportOAuth.Strategy.prototype.userProfile = function(accessToken, done) {
 					this._oauth2.get(constants.userRoute, accessToken, function(err, body, res) {
-						if (err) { return done(new InternalOAuthError('failed to fetch user profile', err)); }
+						if (err) { return done(new Error('failed to fetch user profile', err)); }
 
 						try {
 							var json = JSON.parse(body);
@@ -140,19 +140,15 @@
 		// Everything else is optional.
 
 		// Find out what is available by uncommenting this line:
-		// console.log(data);
+		console.log(data);
 
 		var profile = {};
-		profile.id = data.id;
+		profile.id = data._id;
 		profile.displayName = data.name;
 		profile.emails = [{ value: data.email }];
 
 		// Do you want to automatically make somebody an admin? This line might help you do that...
-		// profile.isAdmin = data.isAdmin ? true : false;
-
-		// Delete or comment out the next TWO (2) lines when you are ready to proceed
-		process.stdout.write('===\nAt this point, you\'ll need to customise the above section to id, displayName, and emails into the "profile" object.\n===');
-		return callback(new Error('Congrats! So far so good -- please see server log for details'));
+		profile.isAdmin = data.role === 'admin';
 
 		callback(null, profile);
 	}

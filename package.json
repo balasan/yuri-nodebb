@@ -1,5 +1,5 @@
 {
-  "name": "nodebb-plugin-sso-oauth",
+  "name": "nodebb-plugin-sso-oauth-yuri",
   "version": "0.2.4",
   "description": "NodeBB Generic OAuth SSO",
   "main": "library.js",
